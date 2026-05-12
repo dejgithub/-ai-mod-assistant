@@ -1,0 +1,60 @@
+{
+  "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
+  "name": "ai-mod-assistant",
+  "server": {
+    "entry": "src/server/index.js"
+  },
+  "permissions": {
+    "http": {
+      "enable": true,
+      "domains": ["your-backend.onrender.com"]
+    },
+    "reddit": {
+      "enable": true,
+      "scope": "moderator"
+    },
+    "redis": true
+  },
+  "menu": {
+    "items": [
+      {
+        "label": "Analyze with AI Mod",
+        "description": "Analyze this post for toxicity, spam, hate speech, and NSFW content using AI",
+        "forUserType": "moderator",
+        "location": ["post"],
+        "endpoint": "/internal/menu/analyze-post"
+      },
+      {
+        "label": "Quick Check",
+        "description": "Quickly check this comment for policy violations",
+        "forUserType": "moderator",
+        "location": ["comment"],
+        "endpoint": "/internal/menu/analyze-comment"
+      }
+    ]
+  },
+  "triggers": {
+    "onPostSubmit": "/internal/triggers/post-submit"
+  },
+  "forms": {
+    "analysisResult": "/internal/form/analysis-result"
+  },
+  "scheduler": {
+    "tasks": {
+      "cleanup-stale-data": {
+        "endpoint": "/internal/cron/cleanup",
+        "cron": "0 3 * * 0"
+      }
+    }
+  },
+  "marketingAssets": {
+    "icon": "assets/icon.svg"
+  },
+  "dev": {
+    "subreddit": "test-my-ai-mod"
+  },
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build"
+  }
+}
