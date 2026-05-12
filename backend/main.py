@@ -1,16 +1,30 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.routes.auth import router as auth_router
-from backend.routes.moderation import router as moderation_router
-from backend.routes.contact import router as contact_router
-from backend.routes.settings import router as settings_router
-from backend.database import init_db
 from backend.config import settings
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        from backend.database import init_db
+        init_db()
+    except Exception as e:
+        print(f'DB init failed (non-fatal): {e}', flush=True)
+    try:
+        from backend.seed_data import seed_moderation_data
+        seed_moderation_data()
+    except Exception as e:
+        print(f'Seed failed (non-fatal): {e}', flush=True)
+    yield
+
 
 app = FastAPI(
     title="AI Reddit Moderator Assistant",
     description="Professional AI-powered Reddit moderation tool with real-time monitoring, toxicity detection, and smart recommendations.",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -21,20 +35,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from backend.routes.auth import router as auth_router
+from backend.routes.moderation import router as moderation_router
+from backend.routes.contact import router as contact_router
+from backend.routes.settings import router as settings_router
+
 app.include_router(auth_router)
 app.include_router(moderation_router)
 app.include_router(contact_router)
 app.include_router(settings_router)
-
-
-@app.on_event("startup")
-def on_startup():
-    init_db()
-    try:
-        from backend.seed_data import seed_moderation_data
-        seed_moderation_data()
-    except Exception:
-        pass
 
 
 @app.get("/")
