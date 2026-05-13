@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FaGithub, FaTwitter, FaDiscord, FaReddit, FaEnvelope, FaMapMarkerAlt, FaGlobe } from 'react-icons/fa'
 import toast from 'react-hot-toast'
+import api from '../api'
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
@@ -11,12 +12,10 @@ export default function Contact() {
     e.preventDefault()
     setSending(true)
     try {
-      const res = await fetch('/api/contact/send', {
-        method: 'POST',
+      const res = await api.post('/api/contact/send', form, {
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
       })
-      if (res.ok) {
+      if (res.status === 200) {
         toast.success('Message sent! We will get back to you soon.')
         setForm({ name: '', email: '', subject: '', message: '' })
       } else {

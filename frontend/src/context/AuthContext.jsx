@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import axios from 'axios'
+import api from '../api'
 import toast from 'react-hot-toast'
 
 const AuthContext = createContext()
@@ -12,17 +12,17 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (token) {
       localStorage.setItem('token', token)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
     } else {
       localStorage.removeItem('token')
-      delete axios.defaults.headers.common['Authorization']
+      delete api.defaults.headers.common['Authorization']
     }
   }, [token])
 
   const login = async (username, password) => {
     setLoading(true)
     try {
-      const { data } = await axios.post('/api/auth/login', { username, password })
+      const { data } = await api.post('/api/auth/login', { username, password })
       setToken(data.access_token)
       setUser({ username })
       toast.success('Welcome back!')
@@ -38,7 +38,7 @@ export function AuthProvider({ children }) {
   const register = async (username, email, password) => {
     setLoading(true)
     try {
-      const { data } = await axios.post('/api/auth/register', { username, email, password })
+      const { data } = await api.post('/api/auth/register', { username, email, password })
       setToken(data.access_token)
       setUser({ username })
       toast.success('Account created successfully!')
